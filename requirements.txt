@@ -1,0 +1,15 @@
+fastapi==0.141.1
+uvicorn==0.52.3
+python-multipart==0.0.32
+opencv-python==4.8.1.78
+google-auth==2.57.0
+google-auth-oauthlib==1.4.1
+google-auth-httplib2==0.4.2
+google-api-python-client==2.199.0
+pymongo==4.17.0
+python-dotenv==1.2.2
+pyzbar==0.1.9
+rapidfuzz==3.14.5
+pillow==12.3.0
+requests==2.34.2
+pandas==2.2.0

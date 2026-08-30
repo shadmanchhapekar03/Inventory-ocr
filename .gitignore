@@ -1,0 +1,23 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment files
+.env
+.env.*
+
+# Google service account credentials (DO NOT COMMIT)
+*.json
+!package.json
+!tsconfig.json
+!package-lock.json
+!next.config.*
+!eslint.config.*
+!postcss.config.*
