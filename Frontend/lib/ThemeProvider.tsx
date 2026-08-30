@@ -3,8 +3,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ThemeKey, themes } from './themes';
 
-type ThemeColors = typeof themes['dark-premium']['colors'];
-type ThemeGradients = typeof themes['dark-premium']['gradients'];
+type ThemeColors = (typeof themes)[ThemeKey]['colors'];
+type ThemeGradients = (typeof themes)[ThemeKey]['gradients'];
 
 interface ThemeContextType {
   theme: ThemeKey;
