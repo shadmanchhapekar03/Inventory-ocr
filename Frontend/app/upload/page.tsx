@@ -33,7 +33,7 @@ export default function UploadPage() {
       toast.success('Success');
       setTimeout(() => router.push('/review'), 600);
     } catch (e: any) {
-      toast.error(e?.message || 'Failed');
+      toast.error(e?.error || e?.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
       setUploadProgress(0);

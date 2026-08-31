@@ -112,6 +112,12 @@ export const processProduct = async (
       };
     }
 
+    if (error.code === 'ERR_NETWORK' || error.name === 'NetworkError') {
+      throw {
+        error: 'Network error: The backend server is not reachable. Please check if the backend is running and accessible.',
+      };
+    }
+
     if (error.response?.data) {
       throw error.response.data;
     }
