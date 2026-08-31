@@ -173,7 +173,7 @@ export const getSheetsData = async (): Promise<SheetRow[]> => {
       console.error('Response Data:', error.response.data);
     } else if (error.request) {
       console.error('No response received. Backend might be down.');
-      console.error('Request:', error.request);
+      // Don't log the XMLHttpRequest object directly (prints as [object XMLHttpRequest])
     } else {
       console.error('Error message:', error.message);
     }
