@@ -384,3 +384,40 @@ async def get_sheets_data():
         traceback.print_exc()
         # Return empty array instead of error object
         return []
+    
+@app.post("/process-bulk")
+async def process_bulk(
+    product_images: list[UploadFile] = File(...),
+    label_images: list[UploadFile] = File(...)
+):
+    """
+    Process multiple product-label pairs in parallel
+    
+    product_images: list of product photos
+    label_images: list of label photos
+    """
+    # Convert uploaded files to numpy arrays
+    product_arrays = []
+    label_arrays = []
+    
+    # Process product images
+    for file in product_images:
+        content = await file.read()
+        nparr = np.frombuffer(content, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        product_arrays.append(image)
+    
+    # Process label images
+    for file in label_images:
+        content = await file.read()
+        nparr = np.frombuffer(content, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        label_arrays.append(image)
+    
+    # Process all pairs in parallel
+    results = process_service.process_bulk(product_arrays, label_arrays)
+    
+    return {
+        "total": len(results),
+        "results": results
+    }

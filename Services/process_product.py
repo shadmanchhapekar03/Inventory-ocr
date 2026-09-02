@@ -1,4 +1,5 @@
 from rapidfuzz import fuzz
+import concurrent.futures
 # from pymongo import MongoClient
 from Barcode.scanner import BarcodeDecoder
 from extractors.label_extractor import LabelExtractor
@@ -184,3 +185,28 @@ class ProcessProductService:
         self.sheets_service.append_row(row_data)
 
         return {"saved": True}
+
+    def process_bulk(self, product_images, label_images):
+        """
+        Process multiple product-label pairs
+        
+        product_images: list of numpy arrays
+        label_images: list of numpy arrays
+        
+        Returns: list of results
+        """
+        results = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            futures = []
+            for i in range(len(product_images)):
+                future = executor.submit(
+                    self.process_complete,
+                    product_images[i],
+                    label_images[i]
+                    )
+                futures.append(future)
+
+            # Collect results as they complete
+            for future in concurrent.futures.as_completed(futures):
+                results.append(future.result())
+        return results
