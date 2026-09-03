@@ -52,6 +52,12 @@ export default function Navbar() {
               Upload
             </Link>
             <Link
+              href="/bulk-process"
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-all duration-300 ${isActive('/bulk-process')}`}
+            >
+              Bulk
+            </Link>
+            <Link
               href="/data"
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-all duration-300 ${isActive('/data')}`}
             >

@@ -68,6 +68,23 @@ export interface SheetRow {
   date_added: string;
 }
 
+export interface BulkResult {
+  product: {
+    barcode_found: boolean;
+    product_found: boolean;
+    product?: ProductData;
+    barcode?: string;
+    method?: string;
+  };
+  label: LabelData;
+  validation: ValidationResult;
+}
+
+export interface ProcessBulkResponse {
+  total: number;
+  results: BulkResult[];
+}
+
 // Process product (upload 2 images)
 export const processProduct = async (
   productImage: File,
@@ -125,6 +142,66 @@ export const processProduct = async (
   }
 };
 
+// Process bulk products (multiple image pairs)
+export const processBulk = async (
+  productImages: File[],
+  labelImages: File[]
+): Promise<ProcessBulkResponse> => {
+  const formData = new FormData();
+
+  productImages.forEach((file, idx) => {
+    formData.append(`product_images`, file, file.name);
+  });
+
+  labelImages.forEach((file, idx) => {
+    formData.append(`label_images`, file, file.name);
+  });
+
+  try {
+    const response = await api.post<ProcessBulkResponse>(
+      '/process-bulk',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 300000, // 5 minutes for bulk processing
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            if (percentCompleted % 10 === 0) {
+              console.log(`📊 Bulk upload progress: ${percentCompleted}%`);
+            }
+          }
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    console.error('Process bulk error:', error);
+
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      throw {
+        error: 'Timeout: Bulk processing took too long. Please try with fewer images or check backend status.',
+      };
+    }
+
+    if (error.code === 'ERR_NETWORK' || error.name === 'NetworkError') {
+      throw {
+        error: 'Network error: The backend server is not reachable.',
+      };
+    }
+
+    if (error.response?.data) {
+      throw error.response.data;
+    }
+    throw error;
+  }
+};
+
 // Confirm and save to Google Sheets
 export const confirmAndSave = async (
   data: ConfirmSaveRequest
@@ -135,6 +212,29 @@ export const confirmAndSave = async (
   );
 
   return response.data;
+};
+
+// Bulk confirm and save
+export const confirmAndSaveBulk = async (
+  dataList: ConfirmSaveRequest[]
+): Promise<{ success: boolean; count: number; errors?: string[] }> => {
+  try {
+    const results = await Promise.all(
+      dataList.map(data => confirmAndSave(data).catch(e => ({ error: e })))
+    );
+
+    const errors = results
+      .map((r: any, i) => r.error ? `Row ${i + 1}: ${r.error.error || r.error.message}` : null)
+      .filter(Boolean) as string[];
+
+    return {
+      success: errors.length === 0,
+      count: results.length - errors.length,
+      errors: errors.length > 0 ? errors : undefined,
+    };
+  } catch (error: any) {
+    throw error;
+  }
 };
 
 // Get sheets data
